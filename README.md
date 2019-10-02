@@ -110,3 +110,111 @@ Item.insertMany(defaultItems, function(err) {
     }
 });
 ```
+
+The next question is that how we can do the same thing in our command line when we said find and managed to grab all of the documents inside our items collection.
+
+How do we do that inside app.js?
+
+```js
+Item.find({}, function(err, foundItems) {
+    console.log(foundItems);
+});
+```
+
+This will find everything inside our item collection.
+
+Now we can get this method to triggered if we go access to the root route.
+
+while we're able to log our items by using find method, the website is broken. 
+
+because it doesn't know the items that we are passing to our list.ejs.
+
+That's because items that's no longer exists.
+
+Items reffered to our items array which we deleted and instead we want to pass over the foundItems.
+
+Now we are going to pass over the foundItems to our to our list.ejs
+
+```js
+    res.render("list", { listTitle: "Today", newListItems: foundItems });
+```
+
+Now the wesite is back , but we still have problems.
+
+The first problem is that our items are being rendered their entirety.
+
+What we want just the name field.
+
+Instead writing the entire document, we can simply tap into the name field.
+
+```ejs
+<p><%=  newListItems[i].name  %></p>
+```
+
+
+The second problem is that when we rerun our app.js, we insert more items into our database because it's rerunning InsertMany()
+lines of code.
+
+
+We want our default items to be inserted if items collection is empty.
+
+so we have to check when the user access the root route whether if the item collection is empty, we are going to add our default items.
+
+The first thing to do is to clear the database.
+
+```
+db.dropDatabase();
+```
+
+Rewrite the for loop into forEach loop 
+
+newlistitems is an array of items documents, so we can call forEach loop on it. 
+
+```ejs
+<% newListItems.forEach(function(item){ %>
+    <div class="item">
+        <input type="checkbox">
+        <p><%=  item.name  %></p>
+      </div>
+<% }) %>
+```
+
+How could we check to see if our collection of items is empty?
+
+```js
+
+   Item.find({}, function (err, foundItems) {
+    if (foundItems.length === 0) {
+      Item.insertMany(defaultItems, function (err) {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log("Successfully saved the default items to the DB.")
+        }
+      });
+    }
+    else {
+      res.render("list", {
+        listTitle: "Today",
+        newListItems: foundItems
+      });
+
+    }
+
+  });
+```
+
+But on the browser, we are not getting the items show up.
+
+```js
+if (foundItems.length === 0) {
+      Item.insertMany(defaultItems, function (err) {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log("Successfully saved the default items to the DB.")
+        }
+      });
+      res.redirect('/')
+}
+```
