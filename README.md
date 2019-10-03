@@ -1,4 +1,7 @@
-# To Do List With a Database
+# Udemy course by the App Brewery
+
+
+## To Do List With a Database
 
 we don't actually have a ```node_module``` folder
 because whenever we download something from the Internet,
