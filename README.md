@@ -218,3 +218,46 @@ if (foundItems.length === 0) {
       res.redirect('/')
 }
 ```
+
+There's just one problem.
+
+If we tried to add a new item right now then our app will crash because again it's telling us there's arry items no longer exists.
+
+
+This happens in our post route and that is when we decide to add a new item and we trigger the form to post to our root route 
+
+
+and we try to grab the item that the user tried to post 
+
+and then we tried to push it into our items Array.
+
+How can we do this using Mongo D-B instead?
+
+We are going to simply delete all of work route and normal route.
+
+We know that when this post route is triggered we can tap into something called ```request.body.newItem``` .
+
+and that will refer to the text that the user entered into the input when they clicked on the plus button.
+
+we are going to save into a constant called ```itemName``` and then we need to create a new item document based on the model in mongo db.
+
+```js
+const itemName = req.body.newItem;
+```
+
+```js
+  const item = new Item({
+    name: itemName
+  });
+```
+
+we could actually just use the mongoose shortcut by saying item.save() 
+
+and that will save this item into our collection of items.
+
+In order to get it to show up at the home page all we need to do is just to res.redirect() back over
+to the home route.
+
+```js
+res.redirect('/');
+```
