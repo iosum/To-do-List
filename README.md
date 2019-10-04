@@ -261,3 +261,157 @@ to the home route.
 ```js
 res.redirect('/');
 ```
+
+---
+
+## Deleting Items from ToDoList DB
+
+we want to be able to delete the item when we click the checkbox next to it.
+
+To do that, we have to remove that particular item from our collection.
+
+Inside list.ejs, there is a checkbox, and next to it we have an item name paragraph.
+
+if we want to send some data when data gets clicked, we need a form and a post route.
+
+so we create a new form 
+
+```ejs
+ <% newListItems.forEach(function(item){ %>
+  <form action="">
+    <div class="item">
+      <input type="checkbox">
+      <p><%=  item.name  %></p>
+    </div>
+  </form>
+
+  <% }) %>
+```
+
+when we refresh, styling might looks a little off in some computers.
+
+inside the css file, we are now having a form targeting our form element.
+
+```css
+form {
+  text-align: center;
+  margin-left: 20px;
+}
+```
+
+we only want to implement the form with a class named item.
+
+```css
+form.item {
+  text-align: center;
+  margin-left: 20px;
+}
+```
+
+now if we hit refresh, previous styles are restored.
+
+the next thing we need to address is where this form post to?
+
+to specify that, we need a action and a method.
+
+This form is going to make a post request.
+
+but the route needs to be different. so called it /delete
+
+```ejs
+<% newListItems.forEach(function(item){ %>
+  <form action="/delete" method="POST">
+    <div class="item">
+      <input type="checkbox">
+      <p><%=  item.name  %></p>
+    </div>
+  </form>
+```
+
+we can now create a delete route, and log req.body
+
+```js
+app.post("/delete", function(req, res) {
+  console.log(req.body);
+});
+```
+
+so what we do is we want to see what the form sends inside our list.ejs.
+
+but when we see inside our console, we can see nothing happened.
+
+the reason is that inside list.ejs, inside the form below, we actually have a button and a type submit.
+
+whenever we have a submit button inside our form, when the button gets pressed, it will send all of the data inside our form and make the post request to the require route.
+
+how do we get the form to submit when the checkbox is checked?
+
+so we found the answer on stackoverflow.
+
+it told us that we need to add an attribute onChange. 
+
+```
+onChange="this.form.submit()"
+```
+
+when the checkbox is checked, we will run this.form.submit(), which will take the current form that the input is inside to submit it and to make that post request to the delete route.
+
+we need a way of accessing this input. we need to give it a name.
+
+```ejs
+<input type="checkbox" name="checkbox" onChange="this.form.submit()">
+```
+
+no we save the file and see the console which it prints out a value on inside a checkbox.
+
+but value on is not really useful for us.
+
+what we want is the item name that actually checked off.
+
+inside for each loop, we can assign a value to our checkbox inside the id.
+
+when we passing the newListItems, we are passing an array inside the mongodb.
+
+each of these items we are looping through it has a name and id.
+
+if we bind id to that value, when the checkbox is checked, we can find out what id is actually checked off.
+
+now we hit save and refresh the page, we can see the id that is cheked inside our items.
+
+now we can delete that particular item with the id.
+
+we store the req.body.checkbox to a constant named checkedItemId.
+
+```js
+  const checkedItemId = req.body.checkbox;
+```
+and we use findByIdAndRemove() to delete the item
+
+if we check the document inside mongoose, if we didn't provide a callback, the item won't actually delete even if we don't care there is any error.
+
+```js
+  Item.findByIdAndRemove(checkedItemId, function(err) {
+    if(!err) {
+      console.log("successfully deleted check item");
+    }
+  });
+```
+
+now we hit save and check the console. we can see the item is deleted.
+
+if we use mongo shell to check, type in db.items.find(). 
+
+we can see the item is longer existed.
+
+to reflet the page, we need to res.redirect to the home route.
+
+```js
+Item.findByIdAndRemove(checkedItemId, function(err) {
+    if(!err) {
+      console.log("successfully deleted check item");
+      res.redirect('/');
+    }
+  });
+```
+
+
