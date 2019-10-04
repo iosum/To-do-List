@@ -1,4 +1,7 @@
-# To Do List With a Database
+# Udemy course by the App Brewery
+
+
+## To Do List With a Database
 
 we don't actually have a ```node_module``` folder
 because whenever we download something from the Internet,
@@ -261,6 +264,7 @@ to the home route.
 ```js
 res.redirect('/');
 ```
+<<<<<<< HEAD
 
 ---
 
@@ -389,14 +393,6 @@ and we use findByIdAndRemove() to delete the item
 
 if we check the document inside mongoose, if we didn't provide a callback, the item won't actually delete even if we don't care there is any error.
 
-```js
-  Item.findByIdAndRemove(checkedItemId, function(err) {
-    if(!err) {
-      console.log("successfully deleted check item");
-    }
-  });
-```
-
 now we hit save and check the console. we can see the item is deleted.
 
 if we use mongo shell to check, type in db.items.find(). 
@@ -404,14 +400,4 @@ if we use mongo shell to check, type in db.items.find().
 we can see the item is longer existed.
 
 to reflet the page, we need to res.redirect to the home route.
-
-```js
-Item.findByIdAndRemove(checkedItemId, function(err) {
-    if(!err) {
-      console.log("successfully deleted check item");
-      res.redirect('/');
-    }
-  });
-```
-
 
