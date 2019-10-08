@@ -401,3 +401,177 @@ we can see the item is longer existed.
 
 to reflet the page, we need to res.redirect to the home route.
 
+---
+
+Express allows us to use route parameters to create dynamic routes
+
+```js
+app.get("/:customListName", function(req, res) {
+  console.log(req.params.customListName);
+});
+```
+
+if we go into our console, we can see the custom list name that we just typed is inside our console.
+
+
+so instead of logging it, we are going to save to a variable called customListName.
+
+```js
+app.get("/:customListName", function(req, res) {
+  const customListName = req.params.customListName;
+});
+```
+
+now we are going to create a new document and have 2 fields, one is the name of the list, which will be string, and the second is going to be an array of items.
+
+```js
+const listSchema = {
+  name: String,
+  items: [itemsSchema]
+};
+```
+
+next thing we are going to do is to create our mongoose model
+
+```js
+const List = mongoose.model("List", listSchema);
+```
+
+now we are going to create new list document based on this model.
+and we are going to do that when a user tries to access a custom list name.
+
+one is the name of the list which is simply going to be whatever the user typed into the route.
+
+the second fields is going to be items. and this should accept an array of list items.
+
+and for the item we are simply to start off with the same default items as we create previously.
+
+after doing it, we are going to call list.save() to save the collection.
+
+```js
+app.get("/:customListName", function(req, res) {
+  const customListName = req.params.customListName;
+
+  const list = new List({
+    name: customListName,
+    item: defaultItems
+  });
+
+  list.save();
+
+});
+```
+
+so we save the file and go to mongo shell, using db.lists.find(), we can see the collection of the list.
+
+Here's the problem.
+
+we don't want to create a new list with a same name everytime the user tries to access it.
+
+we will have to check to see if a list with the name already exists in our collection of lists.
+
+if it does, we are going to display it.
+
+if it doesn't, we are going to display a new list.
+
+here, we are going to use method findOne()
+
+but in the previous lesson, we used find(), it would give us an array back as a result. 
+
+that's why we have to see if the array.length === 0. that is , it had no items in it. it's empty.
+
+but in method findOne, we are getting an object back, because findOne() you'd only return one document if it's found.
+
+so can't check it's length. but we can check if it exits.
+
+```js
+app.get("/:customListName", function(req, res) {
+  const customListName = req.params.customListName;
+
+  List.findOne({name: customListName}, function(err, foundList) {
+    if(!err) {
+      if(!foundList) {
+        // create a new list
+      } else {
+        // show a existing list
+      }
+    }
+  });
+}
+```
+
+now we are going to put our list inside create new list.
+
+```js
+  List.findOne({name: customListName}, function(err, foundList) {
+    if(!err) {
+      if(!foundList) {
+        // create a new list
+
+        const list = new List({
+          name: customListName,
+          items: defaultItems
+        });
+
+        list.save();
+      } else {
+        // show an existing list
+      }
+    }
+  });
+```
+
+inside else statement, we are going to render out list.ejs page, and then the second parameter is going to the list title.
+
+now list title is no longer static, what we are gonna do is to replace today for foundList.name to tap into the name field
+
+
+```js
+List.findOne({name: customListName}, function(err, foundList) {
+    if(!err) {
+      if(!foundList) {
+        // create a new list
+
+        const list = new List({
+          name: customListName,
+          items: defaultItems
+        });
+
+        list.save();
+      } else {
+        // show an existing list
+        res.render("list", {
+          listTitle: foundList.name,
+          newListItems: foundList.items
+        });
+      }
+    }
+  });
+```
+but when we tap into another route such as work route, it don't automatically pop up.
+
+so we need to redirect our home page to the route customListName.
+
+```js
+ List.findOne({name: customListName}, function(err, foundList) {
+    if(!err) {
+      if(!foundList) {
+        // create a new list
+
+        const list = new List({
+          name: customListName,
+          items: defaultItems
+        });
+
+        list.save();
+        res.redirect("/" + customListName);
+      } else {
+        // show an existing list
+        res.render("list", {
+          listTitle: foundList.name,
+          newListItems: foundList.items
+        });
+      }
+    }
+  });
+```
