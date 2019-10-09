@@ -575,3 +575,108 @@ so we need to redirect our home page to the route customListName.
     }
   });
 ```
+
+
+But if we tried to add a new item in here then it actually doesn't work.
+
+It takes us back to the default list called today and then adds an item there.
+
+That's not what we wanted.
+
+We wanted to add it to the custom list that we were in previously.
+
+Well if we take a look inside our list.ejs, you can see that whenever we press the submit button which is that plus sign then no matter which list we're inside.
+
+We're always posting to the root route and remember because this is an Ejs file.
+
+Then it's the same template that we use for the home list the work list the shopping list whatever it may be.
+
+So it's being dynamically rendered.
+
+We have to figure out how we can handle this inside that root route for the post request.
+
+What we need to do instead is we need to pass over the current list that's being displayed which we have access to the list title variable up here and we need to pass it back when this form gets triggered.
+
+So the perfect place to do that is inside the button which is inside the same form.
+
+So you might already have this but make sure we add a new value to our button and the value is going to be created using that same ejs tag.
+
+So it's the one where we grab the value of the variable.
+
+and the variable we need is listTitle.
+
+```ejs
+ <form class="item" action="/" method="post">
+    <input type="text" name="newItem" placeholder="New Item" autocomplete="off">
+    <button type="submit" name="list" value="<%=listTitle%>">+</button>
+  </form>
+</div>
+```
+
+Now whenever we submit our form we should get access to two things.
+
+One is the newItem and the second is the list.
+
+Then inside app.js post route we should be able to tap into not just the itemName but also the list name.
+
+And that's going to be through request.body.list which corresponds to the name of this button.
+
+and the value is going to be the current list that the user is trying to add an item to.
+
+```js
+const listName = req.body.list;
+```
+
+So now it means that if we tried to submit a new item to our today or default list 
+
+then we need to handle it a little bit differently than if it was from the current list.
+
+So let's write an IF statement that checks for that no matter which list the item came from.
+
+We still need to created as a new item document.
+
+So let's create our IF statement down here where we check to see if the list name that triggered the post request is equal to today in which case we're probably in the default list 
+
+in which case we'll simply just save our item to our items collection and then we'll just redirect to the root route.
+
+```js
+  if(listName === "Today") {
+    item.save();
+
+    res.redirect('/');
+  }
+```
+
+
+But if the listName wasn't today then a new item comes from a custom list 
+
+in that case search for that list document in our lists collection in our database 
+
+and we need to add the item and imbedded into the existing array of items.
+
+So in order to do that we're going to use findOne.
+
+So we're going to say list.findOne and we're going to pass over the condition as we're going to look for a list with the name that's equal to the list name.
+
+And then once we've found it we can have the callback with the error and the found list.
+
+And now we can tap into this found list document and try to add on new item.
+
+and then we'll push item to the list array 
+
+and we're going to save or found list so that we update it with the new data.
+
+In this case we have to redirect to the route where the user came from which is going to be / + listName.
+
+```js
+  if(listName === "Today") {
+    item.save();
+    res.redirect('/');
+  } else {
+      List.findOne({name: listName}, function(err, foundList){
+        foundList.items.push(item);
+        foundList.save();
+        res.redirect("/" + listName);
+      })
+    }
+```
