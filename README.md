@@ -680,3 +680,152 @@ In this case we have to redirect to the route where the user came from which is 
       })
     }
 ```
+
+So the last thing that we need to do is we need to be able to delete these items in our custom lists
+
+because at the moment when we checked this item off then it somehow redirects me back to my home page instead of actually deleting the item that I wanted from that custom list.
+
+So here's a problem in that route.
+
+We only look for all of the items but we don't currently check which list the item is from in order to delete it from the correct list.
+
+So the first thing we need is that when we tap into this route we need two pieces of information the ID of the checked item but we also need to know which list that item came from. 
+
+we get from html there's one which has a type of Hidden.
+
+And this allows us to include data that can't be seen or modified by users when a form is submitted.
+
+For example the id of the content or in our case the list name
+
+we are going to add a new input and this input is going to have a type of hidden 
+
+and it's also going to have a name so that we can refer to it
+
+and the name for this is going to be called just listName.
+
+And finally it's going to have a value.
+
+We're going to use that ejs tag again.
+
+And inside here we're going to insert that listTitle that we already have access to.
+
+And now we can close off our inputs and make sure that we add a closing input tag because it's not a self closing tag.
+
+```ejs
+<input type="hidden" name="listName" value="<%=listTitle%>"></input>
+```
+
+So now if we hit save and we get back to our app.js just in our post delete route we can now check to see what is the value of that listName 
+
+so we can create a new constant and we can call it listName.
+
+So the next thing we need to do is we're going to again use an IF statement to check to see if we are making a post request to delete an item from the default list with a list name is today or if we're trying to delete an item from a custom list
+
+if we're on the default list and we can do everything as we did previously.
+
+```js
+  if(listName === "Today") {
+    Item.findByIdAndRemove(checkedItemId, function (err) {
+      if (!err) {
+        console.log("successfully deleted check item");
+        res.redirect('/');
+      }
+    });
+  }
+```
+
+but what about the else block.
+
+Well this is the case where the list name is not today.
+
+So that delete request is actually coming from a custom list.
+
+In this case we need to be able to find the list document that has the current list name and then we need to update that list to remove the checked item with that particular ID.
+
+Now because inside our list document there's an array of item documents.
+
+Then it's actually a little bit more complex because we basically have to find an item inside this array.
+
+We have to basically trail through this array and find an item with a particular ID and then remove the entire item from the array.
+
+We want to use the pull operator.
+
+So inside that we have to specify the pool operator as a key and then the value has to be the field that we want to pull from.
+
+So this has to be an array of something.
+
+we're saying we want to pull from a particular array.
+
+And the way that we're going to find the item inside that array is through its ID or through its name or whatever it is you want to choose.
+
+We're going to tap into our List model and we're going to call findOneAndUpdate
+
+And then we have to specify three things.
+
+The first is the condition.
+
+So which list do you want to find.
+
+And we're only going to get one back.
+
+Remember this is how findOne works.
+
+The second thing is what updates do we want to make.
+
+And the last thing is simply just a callback.
+
+Now in the first part this is quite easy.
+
+The list that we want to find has to have a name that corresponds to this list name.
+
+How are we going to update it.
+
+Well first we need to use the pull operator and then we're going to specify something that we want to pull from 
+
+and here we have to provide the name of the array inside this list that we found and that name is going to be items.
+
+This is the only thing that's an array inside our list document.
+
+Now how do we know which item out of all of the items we want to pull.
+
+Well here's another curly braces where we provide the query for matching the item.
+
+The query we're going to make is we're going to pull the item which has an ID that corresponds to the checkedItemId.
+
+And finally we're ready to write our callback.
+
+So again it's going to be a callback that gives you an error and a found list because in this case we're calling findOne and update the findOne corresponds to finding a list.
+
+Now that we've found the list and we've updated it then if there are no errors we can simply res.redirect to our custom list path.
+
+```js
+  if(listName === "Today") {
+    Item.findByIdAndRemove(checkedItemId, function (err) {
+      if (!err) {
+        console.log("successfully deleted check item");
+        res.redirect('/');
+      }
+    });
+  } else {
+    List.findOneAndUpdate({name: listName}, {$pull: {items: {_id: checkedItemId}}}, function(err, foundList){
+      if(!err){
+        res.redirect("/" + listName);
+      }
+    });
+  }
+```
+
+Now there's just one last thing which is when we create our route parameters as we saw previously it actually differentiates between a lower case work and a upper case work.
+
+There's again lots of ways of doing this.
+
+But the easiest way is just to simply use lodash.
+
+```js
+const _ = require("lodash");
+```
+Here we're going to say custom list name is equal to lowdash.capitalize().
+
+```js
+const customListName = _.capitalize(req.params.customListName);
+```
