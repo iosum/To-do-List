@@ -829,3 +829,44 @@ Here we're going to say custom list name is equal to lowdash.capitalize().
 ```js
 const customListName = _.capitalize(req.params.customListName);
 ```
+
+So how can we instead connect to our Mongar D-B cluster to save our data in the cloud in Monga Atlas instead 
+
+
+if we head back to our cluster and we click on Connect and we choose the connect your application 
+
+and then we're going to select the Sav connection because we're using the latest version of Mongo D-B.
+
+And then we're going to copy this address.
+
+So now if we copy that address and we go back into our app.
+
+Yes we can now select all of this string other than the last part where we're creating our database and we can replace it with that string that we just copied.
+
+And this you will notice is on Mongar DB . net
+
+So there's a couple of changes that we need to make to this you Arel before we can test it.
+
+Now the first thing is we can see that there is a password placeholder here and we have to replace that with the password that we created for our user.
+
+So we have to replace all of this part including the angle brackets with the password.
+
+But at the moment it's trying to save data into the database that we created earlier on which was called test.
+
+So what we're going to do is we're going to delete all of this and we're going to get it to save into the database that we wanted which was todolistDB.
+
+Now if we go into our browser and we go ahead and go on to localhost 3000 again you can see we now have
+
+a brand new copy of our to do list app with a database that's hosted in the cloud on Mongo atlas.
+
+And if we go ahead and add a new item here.
+
+So for example let's say test item and click add.
+
+Now not only does it show up in the database but if we go over to my Mongo DB cluster and we click on collection's you can see I now have this new database called todolistDB.
+
+And we've got items and lists.
+
+And we've got items and lists and default items.
+
+we've got all of the default items plus the one we added just now.
